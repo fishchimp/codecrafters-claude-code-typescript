@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import * as fs from "fs";
 
 async function main() {
   const [, , flag, prompt] = process.argv;
