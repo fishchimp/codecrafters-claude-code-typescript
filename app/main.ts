@@ -40,26 +40,6 @@ async function main() {
         }
       }
     ],
-    "choices": [
-      {
-        "index": 0,
-        "message": {
-          "role": "assistant",
-          "content": null,
-          "tool_calls": [
-            {
-              "id": "call_abc123",
-              "type": "function",
-              "function": {
-                "name": "Read",
-                "arguments": "{\"file_path\": \"/path/to/file.txt\"}"
-              }
-            }
-          ]
-        },
-        "finish_reason": "tool_calls"
-      }
-    ]
   });
 
   if (!response.choices || response.choices.length === 0) {
@@ -67,10 +47,19 @@ async function main() {
   }
 
   // You can use print statements as follows for debugging, they'll be visible when running tests.
-  console.error("Logs from your program will appear here!");
+  const message = response.choices[0].message;
 
-  // TODO: Uncomment the lines below to pass the first stage
-  console.log(response.choices[0].message.content);
+  if (message.tool_calls && message.tool_calls.length > 0) {
+    const toolCall = message.tool_calls[0];
+    const functionName = toolCall.function.name;
+    const args = JSON.parse(toolCall.function.arguments);
+    if (functionName === "Read") {
+      const fileContent = fs.readFileSync(args.file_path, "utf-8");
+      console.log(fileContent);
+    }
+  } else {
+    console.log(message.content);
+  }
 }
 
 main();
