@@ -132,7 +132,7 @@ async function main() {
           const { command } = args;
           const { exec } = require("child_process");
           try {
-            exec(command, (error, stdout, stderr) => {
+            exec(command, (error: { message: any; }, stdout: string, stderr: any) => {
               let output = "";
               if (error) {
                 output = `Error: ${error.message}\n${stderr}`;
