@@ -79,6 +79,16 @@ async function main() {
             content: fileContent,
           });
         }
+
+        if (functionName === "Write") {
+          const { file_path, content } = args;
+          fs.writeFileSync(file_path, content, "utf-8");
+          messages.push({
+            role: "tool",
+            tool_call_id: toolCall.id,
+            content: `Written to ${file_path}`,
+          });
+        }
       }
       continue;
     }
