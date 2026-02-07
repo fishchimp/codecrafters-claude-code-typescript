@@ -57,6 +57,23 @@ async function main() {
           }
         }
       }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "Bash",
+        "description": "Execute a shell command",
+        "parameters": {
+          "type": "object",
+          "required": ["command"],
+          "properties": {
+            "command": {
+              "type": "string",
+              "description": "The command to execute"
+            }
+          }
+        }
+      }
     }
   ];
 
@@ -109,6 +126,32 @@ async function main() {
             tool_call_id: toolCall.id,
             content: `Written to ${file_path}`,
           });
+        }
+
+        if (functionName === "Bash") {
+          const { command } = args;
+          const { exec } = require("child_process");
+          try {
+            exec(command, (error, stdout, stderr) => {
+              let output = "";
+              if (error) {
+                output = `Error: ${error.message}\n${stderr}`;
+              } else {
+                output = stdout + (stderr ? `\n${stderr}` : "");
+              }
+              messages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: output,
+              });
+            });
+          } catch (err) {
+            messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: `Exception: ${err}`,
+            });
+          }
         }
       }
       continue;
