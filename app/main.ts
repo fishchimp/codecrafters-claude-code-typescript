@@ -1,5 +1,7 @@
 import OpenAI from "openai";
 import * as fs from "fs";
+import { exec } from "child_process";
+import  {promisify } from "util";
 
 async function main() {
   const [, , flag, prompt] = process.argv;
@@ -130,26 +132,19 @@ async function main() {
 
         if (functionName === "Bash") {
           const { command } = args;
-          const { exec } = require("child_process");
           try {
-            exec(command, (error: { message: any; }, stdout: string, stderr: any) => {
-              let output = "";
-              if (error) {
-                output = `Error: ${error.message}\n${stderr}`;
-              } else {
-                output = stdout + (stderr ? `\n${stderr}` : "");
-              }
-              messages.push({
-                role: "tool",
-                tool_call_id: toolCall.id,
-                content: output,
-              });
-            });
-          } catch (err) {
+            const { stdout, stderr } = await promisify(exec)(command);
+            const output = stdout || stderr;
             messages.push({
               role: "tool",
               tool_call_id: toolCall.id,
-              content: `Exception: ${err}`,
+              content: output || "Command executed with no output",
+            });
+          } catch (err: any) {
+            messages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: `Error: ${err.message}`,
             });
           }
         }
